@@ -4,6 +4,7 @@ const dotenv = require('dotenv').config();
 const mongoose = require('mongoose');
 const connectDB = require('./connect');
 
+
 // Load environment variables
 const port1 = process.env.SERVER_PORT || 3000;
 
@@ -23,11 +24,7 @@ app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
-const userRouter = require('./routs/userRoute');
-const noteRouter = require('./routs/noteRoute');
 
-app.use('/users', userRouter);
-app.use('/notes', noteRouter);
 
 
 
