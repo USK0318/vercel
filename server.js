@@ -10,6 +10,14 @@ const port1 = process.env.SERVER_PORT || 3000;
 // Connect to MongoDB
 connectDB();
 
+// Define User schema and model
+const userSchema = new mongoose.Schema({
+    name: String,
+    email: String,
+    // Add other fields as necessary
+});
+
+const User = mongoose.model('User', userSchema);
 
 app.get('/', (req, res) => {
     res.send('Hello World');
