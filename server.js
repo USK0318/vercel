@@ -32,11 +32,6 @@ const notesSchema = new mongoose.Schema({
 const Note = mongoose.model('Note', notesSchema);
 
 
-
-const userRoute = require('./routs/userRoute');
-
-app.use('/user', userRoute);
-
 app.get('/', (req, res) => {
     res.send('Hello World');
 });
