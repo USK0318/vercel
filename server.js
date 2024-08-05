@@ -23,11 +23,16 @@ const userSchema = new mongoose.Schema({
     // Add other fields as necessary
 });
 
-const User = mongoose.model('User', userSchema);
+const NoteUser = mongoose.model('NoteUser', userSchema);
 
 app.get('/', (req, res) => {
     res.send('Hello World');
 });
+app.get('/users', async (req, res) => {
+    const users = await NoteUser.find();
+    res.json(users);
+}
+);
 
 
 
