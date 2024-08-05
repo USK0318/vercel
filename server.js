@@ -33,6 +33,10 @@ const Note = mongoose.model('Note', notesSchema);
 
 
 
+const userRoute = require('./routs/userRoute');
+
+app.use('/user', userRoute);
+
 app.get('/', (req, res) => {
     res.send('Hello World');
 });
@@ -74,6 +78,7 @@ app.get('/note/:id', async (req, res) => {
         res.status(500).send('Internal server error');
     }
 });
+
 
 
 
