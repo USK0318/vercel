@@ -23,6 +23,12 @@ app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
+const userRouter = require('./routs/userRoute');
+const noteRouter = require('./routs/noteRoute');
+
+app.use('/users', userRouter);
+app.use('/notes', noteRouter);
+
 
 
 app.listen(port1, () => {
