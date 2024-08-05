@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 
 app.get('/', (req, res) => {
-    res.send('Hello World');
+    res.send('Hello World pig');
 });
 
 app.get('/users', async (req, res) => {
