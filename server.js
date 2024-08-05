@@ -31,7 +31,6 @@ const notesSchema = new mongoose.Schema({
 });
 const Note = mongoose.model('Note', notesSchema);
 
-
 app.get('/', (req, res) => {
     res.send('Hello World');
 });
