@@ -51,33 +51,8 @@ function authenticateToken(req, res, next) {
     });
 }
 
-// Register User
-app.post('/register', async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
-        
-        // Check if the user already exists
-        let user = await NoteUser.findOne({ email });
-        if (user) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Create a new user
-        user = new NoteUser({
-            name,
-            email,
-            password: hashedPassword
-        });
-
-        await user.save();
-        res.status(201).json({ message: 'User registered successfully' });
-    } catch (error) {
-        console.error('Error occurred:', error);
-        res.status(500).send('Internal server error');
-    }
+app.get('/', (req, res) => {
+    res.send('Welcome to the Notes API');
 });
 
 // Login User
