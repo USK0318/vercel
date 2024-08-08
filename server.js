@@ -5,6 +5,10 @@ const mongoose = require('mongoose');
 const connectDB = require('./connect');
 const cors = require('cors');
 
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Load environment variables
 const port1 = process.env.SERVER_PORT || 3000;
 
@@ -74,6 +78,7 @@ app.get('/note/:id', async (req, res) => {
 });
 
 app.post('/note', async (req, res) => {
+    console.log('Request body:');
     try {
         // Create a new note
         const note = new Note({
