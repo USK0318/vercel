@@ -36,7 +36,7 @@ const notesSchema = new mongoose.Schema({
 const Note = mongoose.model('Note', notesSchema);
 
 app.get('/', (req, res) => {
-    res.send('Hello World2');
+    res.send('Hello World');
 });
 app.get('/users', async (req, res) => {
     const users = await NoteUser.find();
@@ -111,6 +111,29 @@ app.delete('/note/:id', async (req, res) => {
         res.status(500).send('Internal server error');
     }
 });
+
+app.put('/note/:id', async (req, res) => {
+    try {
+        // Update a note
+        const note = await Note.findByIdAndUpdate(req.params.id, {
+            title: req.body.title,
+            content: req.body.content
+        }, { new: true });
+
+        if (!note) {
+            console.log('Note not found');
+            return res.status(404).send('Note not found');
+        }
+
+        res.json(note);
+    } catch (error) {
+        console.error('Error occurred:', error);
+        res.status(500).send('Internal server error');
+    }
+}
+);
+
+
 
 
 
