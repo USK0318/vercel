@@ -73,6 +73,26 @@ app.get('/note/:id', async (req, res) => {
     }
 });
 
+app.post('/note', async (req, res) => {
+    try {
+        // Create a new note
+        const note = new Note({
+            title: req.body.title,
+            content: req.body.content,
+            user: req.body.user
+        });
+
+        // Save the note
+        await note.save();
+        res.json(note);
+    } catch (error) {
+        console.error('Error occurred:', error);
+        res.status(500).send('Internal server error');
+    }
+}
+);
+
+
 app.listen(port1, () => {
     console.log('Server is running on port ' + port1);
 });
