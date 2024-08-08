@@ -4,19 +4,14 @@ const dotenv = require('dotenv').config();
 const mongoose = require('mongoose');
 const connectDB = require('./connect');
 const cors = require('cors');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
 
 // Load environment variables
 const port1 = process.env.SERVER_PORT || 3000;
-const secret = process.env.JWT_SECRET || 'your_jwt_secret';
 
-// Middleware
 app.use(cors({
     origin: '*',
     credentials: true
-}));
-app.use(express.json()); // for parsing application/json
+  }));
 
 // Connect to MongoDB
 connectDB();
@@ -24,140 +19,60 @@ connectDB();
 // Define User schema and model
 const userSchema = new mongoose.Schema({
     name: String,
-    email: { type: String, unique: true },
-    password: String, // Store hashed passwords
+    email: String,
 });
 const NoteUser = mongoose.model('NoteUser', userSchema);
 
 const notesSchema = new mongoose.Schema({
     title: String,
     content: String,
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'NoteUser' },
+    user: String,
     datetime: { type: Date, default: Date.now }
 });
 const Note = mongoose.model('Note', notesSchema);
 
-// Authorization middleware
-function authenticateToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) return res.sendStatus(401);
-
-    jwt.verify(token, secret, (err, user) => {
-        if (err) return res.sendStatus(403);
-        req.user = user;
-        next();
-    });
-}
-
 app.get('/', (req, res) => {
-    res.send('Welcome to the Notes API');
+    res.send('Hello World');
 });
+app.get('/users', async (req, res) => {
+    const users = await NoteUser.find();
+    res.json(users);
+}
+);
 
-// Login User
-app.post('/login', async (req, res) => {
+app.get('/note', async (req, res)=>{
+     const note1 = await Note.find();
+     res.json(note1)
+}
+);
+
+app.get('/note/:id', async (req, res) => {
     try {
-        const { email, password } = req.body;
-
-        // Check if the user exists
-        const user = await NoteUser.findOne({ email });
-        if (!user) {
-            return res.status(400).json({ message: 'Invalid email or password' });
-        }
-
-        // Compare the password
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid email or password' });
-        }
-
-        // Generate JWT token
-        const token = jwt.sign({ _id: user._id, name: user.name, email: user.email }, secret, { expiresIn: '1h' });
-
-        res.json({ token, user: { name: user.name, email: user.email } });
-    } catch (error) {
-        console.error('Error occurred:', error);
-        res.status(500).send('Internal server error');
-    }
-});
-
-// CRUD operations for Notes
-
-// Create Note
-app.post('/note', authenticateToken, async (req, res) => {
-    try {
-        const note = new Note({
-            title: req.body.title,
-            content: req.body.content,
-            user: req.user._id
-        });
-        await note.save();
-        res.status(201).json(note);
-    } catch (error) {
-        console.error('Error occurred:', error);
-        res.status(500).send('Internal server error');
-    }
-});
-
-// Read all Notes
-app.get('/note', authenticateToken, async (req, res) => {
-    try {
-        const notes = await Note.find({ user: req.user._id }).populate('user');
-        res.json(notes);
-    } catch (error) {
-        console.error('Error occurred:', error);
-        res.status(500).send('Internal server error');
-    }
-});
-
-// Read single Note by ID
-app.get('/note/:id', authenticateToken, async (req, res) => {
-    try {
+        // Fetch the note and populate the user field
         const note = await Note.findById(req.params.id).populate('user');
-        if (!note || note.user._id.toString() !== req.user._id.toString()) {
+        
+        if (!note) {
+            console.log('Note not found');
             return res.status(404).send('Note not found');
         }
-        res.json(note);
+
+        // Prepare the response with the note and user details
+        const newNote = {
+            _id: note._id,
+            title: note.title,
+            content: note.content,
+            date: note.datetime,
+            username: note.user.name,
+            useremail: note.user.email
+        };
+
+        res.json(newNote);
     } catch (error) {
         console.error('Error occurred:', error);
         res.status(500).send('Internal server error');
     }
 });
 
-// Update Note by ID
-app.put('/note/:id', authenticateToken, async (req, res) => {
-    try {
-        const note = await Note.findById(req.params.id);
-        if (!note || note.user._id.toString() !== req.user._id.toString()) {
-            return res.status(404).send('Note not found');
-        }
-        note.title = req.body.title || note.title;
-        note.content = req.body.content || note.content;
-        await note.save();
-        res.json(note);
-    } catch (error) {
-        console.error('Error occurred:', error);
-        res.status(500).send('Internal server error');
-    }
-});
-
-// Delete Note by ID
-app.delete('/note/:id', authenticateToken, async (req, res) => {
-    try {
-        const note = await Note.findById(req.params.id);
-        if (!note || note.user._id.toString() !== req.user._id.toString()) {
-            return res.status(404).send('Note not found');
-        }
-        await note.deleteOne();
-        res.json({ message: 'Note deleted successfully' });
-    } catch (error) {
-        console.error('Error occurred:', error);
-        res.status(500).send('Internal server error');
-    }
-});
-
-// Server listening
 app.listen(port1, () => {
     console.log('Server is running on port ' + port1);
 });
