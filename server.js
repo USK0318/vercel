@@ -24,6 +24,7 @@ connectDB();
 const userSchema = new mongoose.Schema({
     name: String,
     email: String,
+    phone:Number
 });
 const NoteUser = mongoose.model('NoteUser', userSchema);
 
@@ -36,13 +37,21 @@ const notesSchema = new mongoose.Schema({
 const Note = mongoose.model('Note', notesSchema);
 
 app.get('/', (req, res) => {
-    res.send('Hello World');
+    res.send('Hello World2');
 });
-app.get('/users', async (req, res) => {
-    const users = await NoteUser.find();
-    res.json(users);
-}
-);
+
+app.get('/users/:id', async (req, res) => {
+    try {
+        const user = await NoteUser.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+    
 
 app.get('/note', async (req, res)=>{
      const note1 = await Note.find();
@@ -52,22 +61,27 @@ app.get('/note', async (req, res)=>{
 
 app.get('/note/:id', async (req, res) => {
     try {
-        // Fetch the note and populate the user field
-        const note = await Note.findById(req.params.id).populate('user');
-        
+        const note = await Note.findById(req.params.id);
         if (!note) {
             console.log('Note not found');
             return res.status(404).send('Note not found');
         }
 
-        // Prepare the response with the note and user details
+        const user = await NoteUser.findById(note.user); 
+
+        if (!user) {
+            console.log('User not found');
+            return res.status(404).send('User not found');
+        }
+
         const newNote = {
             _id: note._id,
             title: note.title,
             content: note.content,
             date: note.datetime,
-            username: note.user.name,
-            useremail: note.user.email
+            username: user.name,
+            useremail: user.email,
+            phone:user.phone
         };
 
         res.json(newNote);
@@ -76,6 +90,7 @@ app.get('/note/:id', async (req, res) => {
         res.status(500).send('Internal server error');
     }
 });
+
 
 app.post('/note', async (req, res) => {
     console.log('Request body:');
@@ -132,10 +147,6 @@ app.put('/note/:id', async (req, res) => {
     }
 }
 );
-
-
-
-
 
 
 app.listen(port1, () => {
