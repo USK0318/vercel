@@ -8,7 +8,23 @@ const bcrypt = require('bcrypt');
 const token = require('jsonwebtoken');
 
 
-// Middleware
+const authenticateToken = (req, res, next) => {
+    const token1 = req.headers['authorization'];
+
+    if (!token1) {
+        return res.sendStatus(401);
+    }
+
+    token.verify(token1, 'saikirNani@123', (err, user) => {
+        if (err) {
+            return res.sendStatus(403);
+        }
+        req.user = user;
+        next();
+    });
+};
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -40,11 +56,11 @@ const notesSchema = new mongoose.Schema({
 });
 const Note = mongoose.model('Note', notesSchema);
 
-app.get('/', (req, res) => {
+app.get('/' ,authenticateToken,(req, res) => {
     res.send('Hello World');
 });
 
-app.get('/users/:id', async (req, res) => {
+app.get('/users/:id',authenticateToken, async (req, res) => {
     try {
         const user = await NoteUser.findById(req.params.id);
         if (!user) {
@@ -57,13 +73,13 @@ app.get('/users/:id', async (req, res) => {
 });
     
 
-app.get('/note', async (req, res)=>{
+app.get('/note',authenticateToken, async (req, res)=>{
      const note1 = await Note.find();
      res.json(note1)
 }
 );
 
-app.get('/note/:id', async (req, res) => {
+app.get('/note/:id',authenticateToken, async (req, res) => {
     try {
         const note = await Note.findById(req.params.id);
         if (!note) {
@@ -96,7 +112,7 @@ app.get('/note/:id', async (req, res) => {
 });
 
 
-app.post('/note', async (req, res) => {
+app.post('/note',authenticateToken, async (req, res) => {
     // Check if any of the required fields are missing
     if (!req.body.title || !req.body.content || !req.body.user) {
         return res.status(400).send("Please enter the data"); // Send a 400 Bad Request status
@@ -119,7 +135,7 @@ app.post('/note', async (req, res) => {
 });
 
 
-app.delete('/note/:id', async (req, res) => {
+app.delete('/note/:id',authenticateToken, async (req, res) => {
     try {
         // Delete a note
         const note = await Note.findByIdAndDelete(req.params.id);
@@ -134,7 +150,7 @@ app.delete('/note/:id', async (req, res) => {
     }
 });
 
-app.put('/note/:id', async (req, res) => {
+app.put('/note/:id',authenticateToken, async (req, res) => {
     try {
         // Update a note
         const note = await Note.findByIdAndUpdate(req.params.id, {
