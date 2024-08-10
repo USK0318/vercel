@@ -97,7 +97,10 @@ app.get('/note/:id', async (req, res) => {
 
 
 app.post('/note', async (req, res) => {
-    console.log('Request body:');
+    // Check if any of the required fields are missing
+    if (!req.body.title || !req.body.content || !req.body.user) {
+        return res.status(400).send("Please enter the data"); // Send a 400 Bad Request status
+    }
     try {
         // Create a new note
         const note = new Note({
@@ -113,8 +116,8 @@ app.post('/note', async (req, res) => {
         console.error('Error occurred:', error);
         res.status(500).send('Internal server error');
     }
-}
-);
+});
+
 
 app.delete('/note/:id', async (req, res) => {
     try {
