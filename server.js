@@ -4,6 +4,9 @@ const dotenv = require('dotenv').config();
 const mongoose = require('mongoose');
 const connectDB = require('./connect');
 const cors = require('cors');
+const bcrypt = require('bcrypt');
+const token = require('jsonwebtoken');
+
 
 // Middleware
 app.use(express.json());
@@ -23,6 +26,7 @@ connectDB();
 // Define User schema and model
 const userSchema = new mongoose.Schema({
     name: String,
+    password:String,
     email: String,
     phone:Number
 });
@@ -148,6 +152,33 @@ app.put('/note/:id', async (req, res) => {
 }
 );
 
+app.post('/login', async(req, res) => { 
+        try {
+          const user = await NoteUser.findOne({ email: req.body.email });
+          if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+          }
+      
+          const validPassword = await bcrypt.compare(req.body.password, user.password);
+      
+          if (!validPassword) {
+            return res.status(400).json({ msg: 'Invalid password' });
+          }
+      
+          const key="saikirNani@123"
+          const tokens = token.sign(
+            { userId: user._id, isAdmin: user.isAdmin },
+            key,
+            { expiresIn: '500h' }
+          );
+      
+          res.status(200).json({ tokens, user });
+      
+        } catch (err) {
+          console.error('Error in login controller:', err);
+          res.status(500).send('Internal server error');
+        }
+      });
 
 app.listen(port1, () => {
     console.log('Server is running on port ' + port1);
