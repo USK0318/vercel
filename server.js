@@ -41,7 +41,7 @@ const notesSchema = new mongoose.Schema({
 const Note = mongoose.model('Note', notesSchema);
 
 app.get('/', (req, res) => {
-    res.send('Hello World2');
+    res.send('Hello World');
 });
 
 app.get('/users/:id', async (req, res) => {
