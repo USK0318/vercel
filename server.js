@@ -73,7 +73,7 @@ app.get('/users/:id',authenticateToken, async (req, res) => {
 });
     
 
-app.get('/note',authenticateToken, async (req, res)=>{
+app.get('/note', async (req, res)=>{
      const note1 = await Note.find();
      res.json(note1)
 }
