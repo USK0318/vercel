@@ -56,7 +56,7 @@ const notesSchema = new mongoose.Schema({
 });
 const Note = mongoose.model('Note', notesSchema);
 
-app.get('/' ,authenticateToken,(req, res) => {
+app.get('/' ,(req, res) => {
     res.send('Hello World');
 });
 
