@@ -137,11 +137,14 @@ app.post('/note', authenticateToken, async (req, res) => {
     if (!req.body.title || !req.body.content || !req.body.user) {
         return res.status(400).send("Please enter the data");
     }
+    const token1 = req.headers['authorization'];
+    const userid = token.decode(token1).userId;
     try {
         const note = new Note({
             title: req.body.title,
             content: req.body.content,
-            user: req.body.user
+            user: req.body.user,
+            viewedusers: [userid]
         });
 
         // Save the note
