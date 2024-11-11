@@ -49,6 +49,7 @@ const notesSchema = new mongoose.Schema({
     title: String,
     content: String,
     user: String,
+    viewedusers: Array,
     datetime: { type: Date, default: Date.now }
 });
 const Note = mongoose.model('Note', notesSchema);
@@ -62,10 +63,11 @@ app.get('/', (req, res) => {
 app.get('/users/:id', authenticateToken, async (req, res) => {
     try {
         const user = await NoteUser.findById(req.params.id);
+        const notescount = await Note.find({ user: req.params.id }).countDocuments();
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        res.json(user);
+        res.json(user, notescount);
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
