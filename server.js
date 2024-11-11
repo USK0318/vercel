@@ -28,23 +28,20 @@ const authenticateToken = (req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Load environment variables
 const port1 = process.env.SERVER_PORT || 3000;
 
 app.use(cors({
     origin: '*',
     credentials: true
-  }));
+}));
 
-// Connect to MongoDB
 connectDB();
 
-// Define User schema and model
 const userSchema = new mongoose.Schema({
     name: String,
-    password:String,
+    password: String,
     email: String,
-    phone:Number
+    phone: Number
 });
 const NoteUser = mongoose.model('NoteUser', userSchema);
 
@@ -56,11 +53,13 @@ const notesSchema = new mongoose.Schema({
 });
 const Note = mongoose.model('Note', notesSchema);
 
-app.get('/' ,(req, res) => {
+app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
-app.get('/users/:id',authenticateToken, async (req, res) => {
+
+// Get users by id
+app.get('/users/:id', authenticateToken, async (req, res) => {
     try {
         const user = await NoteUser.findById(req.params.id);
         if (!user) {
@@ -71,15 +70,22 @@ app.get('/users/:id',authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
-    
 
-app.get('/note',authenticateToken, async (req, res)=>{
-     const note1 = await Note.find();
-     res.json(note1)
-}
-);
 
-app.get('/note/:id',authenticateToken, async (req, res) => {
+// Get all nots
+app.get('/note', authenticateToken, async (req, res) => {
+    try {
+        const note1 = await Note.find();
+        res.json(note1);
+    } catch (error) {
+        console.error('Error occurred:', error);
+        res.status(500).send('Internal server error');
+    }
+});
+
+
+// Get a note by id
+app.get('/note/:id', authenticateToken, async (req, res) => {
     try {
         const note = await Note.findById(req.params.id);
         if (!note) {
@@ -87,7 +93,7 @@ app.get('/note/:id',authenticateToken, async (req, res) => {
             return res.status(404).send('Note not found');
         }
 
-        const user = await NoteUser.findById(note.user); 
+        const user = await NoteUser.findById(note.user);
 
         if (!user) {
             console.log('User not found');
@@ -101,7 +107,7 @@ app.get('/note/:id',authenticateToken, async (req, res) => {
             date: note.datetime,
             username: user.name,
             useremail: user.email,
-            phone:user.phone
+            phone: user.phone
         };
 
         res.json(newNote);
@@ -111,14 +117,12 @@ app.get('/note/:id',authenticateToken, async (req, res) => {
     }
 });
 
-
-app.post('/note',authenticateToken, async (req, res) => {
-    // Check if any of the required fields are missing
+// Create a new note
+app.post('/note', authenticateToken, async (req, res) => {
     if (!req.body.title || !req.body.content || !req.body.user) {
-        return res.status(400).send("Please enter the data"); // Send a 400 Bad Request status
+        return res.status(400).send("Please enter the data"); 
     }
     try {
-        // Create a new note
         const note = new Note({
             title: req.body.title,
             content: req.body.content,
@@ -134,10 +138,9 @@ app.post('/note',authenticateToken, async (req, res) => {
     }
 });
 
-
-app.delete('/note/:id',authenticateToken, async (req, res) => {
+// Delete a note
+app.delete('/note/:id', authenticateToken, async (req, res) => {
     try {
-        // Delete a note
         const note = await Note.findByIdAndDelete(req.params.id);
         if (!note) {
             console.log('Note not found');
@@ -150,9 +153,9 @@ app.delete('/note/:id',authenticateToken, async (req, res) => {
     }
 });
 
-app.put('/note/:id',authenticateToken, async (req, res) => {
+// Update a note
+app.put('/note/:id', authenticateToken, async (req, res) => {
     try {
-        // Update a note
         const note = await Note.findByIdAndUpdate(req.params.id, {
             title: req.body.title,
             content: req.body.content
@@ -168,36 +171,40 @@ app.put('/note/:id',authenticateToken, async (req, res) => {
         console.error('Error occurred:', error);
         res.status(500).send('Internal server error');
     }
-}
-);
+});
 
-app.post('/login', async(req, res) => { 
-        try {
-          const user = await NoteUser.findOne({ email: req.body.email });
-          if (!user) {
+
+
+// login user
+app.post('/login', async (req, res) => {
+    try {
+        const user = await NoteUser.findOne({ email: req.body.email });
+        if (!user) {
             return res.status(404).json({ msg: 'User not found' });
-          }
-      
-          const validPassword = await bcrypt.compare(req.body.password, user.password);
-      
-          if (!validPassword) {
+        }
+
+        const validPassword = await bcrypt.compare(req.body.password, user.password);
+
+        if (!validPassword) {
             return res.status(400).json({ msg: 'Invalid password' });
-          }
-      
-          const key="saikirNani@123"
-          const tokens = token.sign(
+        }
+
+        const key = "saikirNani@123"
+        const tokens = token.sign(
             { userId: user._id, isAdmin: user.isAdmin },
             key,
             { expiresIn: '500h' }
-          );
-      
-          res.status(200).json({ tokens, user });
-      
-        } catch (err) {
-          console.error('Error in login controller:', err);
-          res.status(500).send('Internal server error');
-        }
-      });
+        );
+
+        res.status(200).json({ tokens, user });
+
+    } catch (err) {
+        console.error('Error in login controller:', err);
+        res.status(500).send('Internal server error');
+    }
+});
+
+
 
 app.listen(port1, () => {
     console.log('Server is running on port ' + port1);
