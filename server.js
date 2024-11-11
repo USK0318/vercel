@@ -58,13 +58,11 @@ app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
-
 // Get users by id
 app.get('/users/:id', authenticateToken, async (req, res) => {
     try {
         const user = await NoteUser.findById(req.params.id);
         const notescount = await Note.find({ user: req.params.id }).countDocuments();
-        console.log(notescount);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -74,8 +72,6 @@ app.get('/users/:id', authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
-
-
 
 // Get all nots
 app.get('/note', authenticateToken, async (req, res) => {
@@ -88,7 +84,6 @@ app.get('/note', authenticateToken, async (req, res) => {
         res.status(500).send('Internal server error');
     }
 });
-
 
 // Get a note by id
 app.get('/note/:id', authenticateToken, async (req, res) => {
@@ -179,8 +174,6 @@ app.put('/note/:id', authenticateToken, async (req, res) => {
     }
 });
 
-
-
 // login user
 app.post('/login', async (req, res) => {
     try {
@@ -209,7 +202,6 @@ app.post('/login', async (req, res) => {
         res.status(500).send('Internal server error');
     }
 });
-
 
 
 app.listen(port1, () => {
