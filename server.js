@@ -64,14 +64,17 @@ app.get('/users/:id', authenticateToken, async (req, res) => {
     try {
         const user = await NoteUser.findById(req.params.id);
         const notescount = await Note.find({ user: req.params.id }).countDocuments();
+        console.log(notescount);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        res.json(user, notescount);
+        res.json({ user, notescount });
     } catch (error) {
+        console.error('Error occurred:', error);
         res.status(500).json({ message: 'Server error' });
     }
 });
+
 
 
 // Get all nots
@@ -123,7 +126,7 @@ app.get('/note/:id', authenticateToken, async (req, res) => {
 // Create a new note
 app.post('/note', authenticateToken, async (req, res) => {
     if (!req.body.title || !req.body.content || !req.body.user) {
-        return res.status(400).send("Please enter the data"); 
+        return res.status(400).send("Please enter the data");
     }
     try {
         const note = new Note({
