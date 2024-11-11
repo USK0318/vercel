@@ -76,6 +76,7 @@ app.get('/users/:id', authenticateToken, async (req, res) => {
 app.get('/note', authenticateToken, async (req, res) => {
     try {
         const note1 = await Note.find();
+        note1.reverse();
         res.json(note1);
     } catch (error) {
         console.error('Error occurred:', error);
