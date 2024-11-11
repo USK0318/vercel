@@ -49,7 +49,12 @@ const notesSchema = new mongoose.Schema({
     title: String,
     content: String,
     user: String,
-    viewedusers: Array,
+    viewedusers: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'NoteUser'
+        }
+    ],
     datetime: { type: Date, default: Date.now }
 });
 const Note = mongoose.model('Note', notesSchema);
@@ -88,7 +93,15 @@ app.get('/note', authenticateToken, async (req, res) => {
 // Get a note by id
 app.get('/note/:id', authenticateToken, async (req, res) => {
     try {
-        const note = await Note.findById(req.params.id);
+        const token1 = req.headers['authorization'];
+        const userid = token.decode(token1).userId;
+        const notetoappenduser = await Note.findById(req.params.id);
+        if (!notetoappenduser.viewedusers.includes(userid)) {
+            notetoappenduser.viewedusers.push(userid);
+            await notetoappenduser.save();
+        }
+
+        const note = await Note.findById(req.params.id).populate('viewedusers');
         if (!note) {
             console.log('Note not found');
             return res.status(404).send('Note not found');
@@ -108,7 +121,8 @@ app.get('/note/:id', authenticateToken, async (req, res) => {
             date: note.datetime,
             username: user.name,
             useremail: user.email,
-            phone: user.phone
+            phone: user.phone,
+            usersviewed: note.viewedusers,
         };
 
         res.json(newNote);
